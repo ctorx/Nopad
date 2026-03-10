@@ -191,6 +191,7 @@ public partial class FindReplaceControl : UserControl
     public void Hide()
     {
         Visibility = Visibility.Collapsed;
+        RestoreEditorPadding();
         _editor?.Focus();
     }
 
@@ -278,6 +279,47 @@ public partial class FindReplaceControl : UserControl
         _editor.ScrollToLine(line);
         _lastFoundIndex = index;
         _lastFoundLength = length;
+
+        // If the match is in the first 50px of the editor (unscrolled position),
+        // add temporary top padding to push content below the find/replace card
+        if (Visibility == Visibility.Visible)
+        {
+            Dispatcher.BeginInvoke(DispatcherPriority.Loaded, () =>
+            {
+                var rect = _editor.GetRectFromCharacterIndex(index);
+                var sv = FindScrollViewer(_editor);
+                if (sv == null) return;
+
+                // Calculate the match position without scroll offset (its natural position)
+                double naturalY = rect.Top + sv.VerticalOffset;
+
+                if (naturalY < 50)
+                {
+                    if (_editor.Padding.Top < 50)
+                    {
+                        var p = _editor.Padding;
+                        _editor.Padding = new Thickness(p.Left, 50, p.Right, p.Bottom);
+                        _editor.ScrollToLine(line);
+                    }
+                }
+                else
+                {
+                    RestoreEditorPadding();
+                }
+            });
+        }
+        else
+        {
+            RestoreEditorPadding();
+        }
+    }
+
+    private void RestoreEditorPadding()
+    {
+        if (_editor == null) return;
+        var p = _editor.Padding;
+        if (p.Top != 0)
+            _editor.Padding = new Thickness(p.Left, 0, p.Right, p.Bottom);
     }
 
     public void FindNext()

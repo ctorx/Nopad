@@ -133,7 +133,7 @@
                          FontSize="14"
                          TextBlock.LineHeight="22"
                          BorderThickness="0"
-                         BorderBrush="Transparent"    Background="Transparent"     Padding="20,0"
+                         BorderBrush="Transparent"    Background="Transparent"     Padding="20,0,0,0"
                          SelectionBrush="#0078D7"
                          TextChanged="Editor_TextChanged"
                          SelectionChanged="Editor_SelectionChanged"
