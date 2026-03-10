@@ -8,44 +8,54 @@
         WindowStartupLocation="CenterScreen">
     <DockPanel x:Name="RootPanel">
         <!-- Menu Bar -->
-        <Menu x:Name="AppMenu" DockPanel.Dock="Top" Padding="0,0" Panel.ZIndex="10">
-            <MenuItem Header="_File" Margin="0,-8,0,-8" SubmenuOpened="FileMenu_SubmenuOpened">
-                <MenuItem Header="_New" InputGestureText="Ctrl+N" Click="New_Click"/>
-                <MenuItem Header="_Open..." InputGestureText="Ctrl+O" Click="Open_Click"/>
-                <MenuItem Header="_Save" InputGestureText="Ctrl+S" Click="Save_Click"/>
-                <MenuItem Header="Save _As..." InputGestureText="Ctrl+Shift+S" Click="SaveAs_Click"/>
-                <Separator/>
-                <MenuItem x:Name="IntegrateMenuItem" Header="_Install" Click="Integrate_Click"/>
-                <Separator/>
-                <MenuItem Header="E_xit" Click="Exit_Click"/>
-            </MenuItem>
-            <MenuItem Header="_Edit" Margin="0,-8,0,-8">
-                <MenuItem Header="_Undo" InputGestureText="Ctrl+Z" Click="Undo_Click"/>
-                <MenuItem Header="_Redo" InputGestureText="Ctrl+Y" Click="Redo_Click"/>
-                <Separator/>
-                <MenuItem Header="Cu_t" InputGestureText="Ctrl+X" Click="Cut_Click"/>
-                <MenuItem Header="_Copy" InputGestureText="Ctrl+C" Click="Copy_Click"/>
-                <MenuItem Header="_Paste" InputGestureText="Ctrl+V" Click="Paste_Click"/>
-                <MenuItem Header="_Delete" InputGestureText="Del" Click="Delete_Click"/>
-                <Separator/>
-                <MenuItem Header="_Find..." InputGestureText="Ctrl+F" Click="Find_Click"/>
-                <MenuItem Header="_Replace..." InputGestureText="Ctrl+H" Click="Replace_Click"/>
-                <Separator/>
-                <MenuItem Header="Select _All" InputGestureText="Ctrl+A" Click="SelectAll_Click"/>
-            </MenuItem>
-            <MenuItem Header="_View" Margin="0,-8,0,-8">
-                <MenuItem Header="Zoom _In" InputGestureText="Ctrl+Plus" Click="ZoomIn_Click"/>
-                <MenuItem Header="Zoom _Out" InputGestureText="Ctrl+Minus" Click="ZoomOut_Click"/>
-                <MenuItem Header="_Reset Zoom" InputGestureText="Ctrl+0" Click="ZoomReset_Click"/>
-                <Separator/>
-                <MenuItem x:Name="WordWrapMenuItem" Header="_Word Wrap" IsCheckable="True"
-                          Checked="WordWrap_Changed" Unchecked="WordWrap_Changed"/>
-                <MenuItem x:Name="LineNumbersMenuItem" Header="_Line Numbers" IsCheckable="True"
-                          Checked="LineNumbers_Changed" Unchecked="LineNumbers_Changed"/>
-                <MenuItem x:Name="StatusBarMenuItem" Header="_Status Bar" IsCheckable="True" IsChecked="True"
-                          Checked="StatusBar_Changed" Unchecked="StatusBar_Changed"/>
-            </MenuItem>
-        </Menu>
+        <Grid x:Name="MenuBarGrid" DockPanel.Dock="Top" Panel.ZIndex="10">
+            <Menu x:Name="AppMenu" Padding="0,0" HorizontalAlignment="Left">
+                <MenuItem Header="_File" Margin="0,-8,0,-8" SubmenuOpened="FileMenu_SubmenuOpened">
+                    <MenuItem Header="_New" InputGestureText="Ctrl+N" Click="New_Click"/>
+                    <MenuItem Header="_Open..." InputGestureText="Ctrl+O" Click="Open_Click"/>
+                    <MenuItem Header="_Save" InputGestureText="Ctrl+S" Click="Save_Click"/>
+                    <MenuItem Header="Save _As..." InputGestureText="Ctrl+Shift+S" Click="SaveAs_Click"/>
+                    <Separator/>
+                    <MenuItem x:Name="IntegrateMenuItem" Header="_Install" Click="Integrate_Click"/>
+                    <Separator/>
+                    <MenuItem Header="E_xit" Click="Exit_Click"/>
+                </MenuItem>
+                <MenuItem Header="_Edit" Margin="0,-8,0,-8">
+                    <MenuItem Header="_Undo" InputGestureText="Ctrl+Z" Click="Undo_Click"/>
+                    <MenuItem Header="_Redo" InputGestureText="Ctrl+Y" Click="Redo_Click"/>
+                    <Separator/>
+                    <MenuItem Header="Cu_t" InputGestureText="Ctrl+X" Click="Cut_Click"/>
+                    <MenuItem Header="_Copy" InputGestureText="Ctrl+C" Click="Copy_Click"/>
+                    <MenuItem Header="_Paste" InputGestureText="Ctrl+V" Click="Paste_Click"/>
+                    <MenuItem Header="_Delete" InputGestureText="Del" Click="Delete_Click"/>
+                    <Separator/>
+                    <MenuItem Header="_Find..." InputGestureText="Ctrl+F" Click="Find_Click"/>
+                    <MenuItem Header="_Replace..." InputGestureText="Ctrl+H" Click="Replace_Click"/>
+                    <Separator/>
+                    <MenuItem Header="Select _All" InputGestureText="Ctrl+A" Click="SelectAll_Click"/>
+                </MenuItem>
+                <MenuItem Header="_View" Margin="0,-8,0,-8">
+                    <MenuItem Header="Zoom _In" InputGestureText="Ctrl+Plus" Click="ZoomIn_Click"/>
+                    <MenuItem Header="Zoom _Out" InputGestureText="Ctrl+Minus" Click="ZoomOut_Click"/>
+                    <MenuItem Header="_Reset Zoom" InputGestureText="Ctrl+0" Click="ZoomReset_Click"/>
+                    <Separator/>
+                    <MenuItem x:Name="WordWrapMenuItem" Header="_Word Wrap" IsCheckable="True"
+                              Checked="WordWrap_Changed" Unchecked="WordWrap_Changed"/>
+                    <MenuItem x:Name="LineNumbersMenuItem" Header="_Line Numbers" IsCheckable="True"
+                              Checked="LineNumbers_Changed" Unchecked="LineNumbers_Changed"/>
+                    <MenuItem x:Name="StatusBarMenuItem" Header="_Status Bar" IsCheckable="True" IsChecked="True"
+                              Checked="StatusBar_Changed" Unchecked="StatusBar_Changed"/>
+                </MenuItem>
+            </Menu>
+            <ToggleButton x:Name="LockButton" HorizontalAlignment="Right" Click="LockButton_Click"
+                          Background="Transparent" BorderThickness="0" Cursor="Hand"
+                          VerticalAlignment="Center" Margin="0,0,8,0" Padding="2,0"
+                          ToolTip="Click to enable save prompt on close">
+                <TextBlock x:Name="LockGlyph" Text="&#xE785;"
+                           FontFamily="Segoe Fluent Icons" FontSize="14"
+                           Opacity="0.4"/>
+            </ToggleButton>
+        </Grid>
 
         <!-- Status Bar -->
         <Border x:Name="AppStatusBar" DockPanel.Dock="Bottom" Padding="10,6" BorderThickness="0,1,0,0" Panel.ZIndex="10">

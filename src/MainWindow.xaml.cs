@@ -61,6 +61,9 @@ public partial class MainWindow : Window
     private bool _showLineNumbers;
     private ScrollViewer? _editorScrollViewer;
 
+    // Close prompt lock
+    private bool _closePromptEnabled;
+
     // Block selection state
     private bool _blockSelectionActive;
     private int _blockAnchorLine, _blockAnchorCol;
@@ -915,6 +918,7 @@ public partial class MainWindow : Window
             Editor.Foreground = fg;
 
             // Menu bar
+            MenuBarGrid.Background = chromeBg;
             AppMenu.Background = chromeBg;
             AppMenu.Foreground = fg;
 
@@ -946,6 +950,7 @@ public partial class MainWindow : Window
             Editor.CaretBrush = fg;
             Editor.Foreground = fg;
 
+            MenuBarGrid.Background = chromeBg;
             AppMenu.Background = chromeBg;
             AppMenu.Foreground = fg;
 
@@ -975,10 +980,53 @@ public partial class MainWindow : Window
             RootPanel.Margin = new Thickness(0);
     }
 
-    // --- Window Close: No Prompt ---
+    // --- Lock Button ---
+
+    private void LockButton_Click(object sender, RoutedEventArgs e)
+    {
+        _closePromptEnabled = LockButton.IsChecked == true;
+        UpdateLockVisual();
+    }
+
+    private void UpdateLockVisual()
+    {
+        if (_closePromptEnabled)
+        {
+            LockGlyph.Text = "\uE72E"; // Locked icon
+            LockGlyph.Opacity = 0.8;
+            LockButton.ToolTip = "Save prompt on close is enabled";
+        }
+        else
+        {
+            LockGlyph.Text = "\uE785"; // Unlocked icon
+            LockGlyph.Opacity = 0.4;
+            LockButton.ToolTip = "Click to enable save prompt on close";
+        }
+    }
+
+    // --- Window Close ---
 
     protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
     {
+        if (_closePromptEnabled && _isModified)
+        {
+            var result = ThemedMessageBox.Show(
+                "You have unsaved changes. Do you want to save before closing?",
+                "Nopad", this, showCancel: true);
+
+            if (result == "Yes")
+            {
+                SaveFile();
+                // If still modified (user cancelled save dialog), abort close
+                if (_isModified)
+                    e.Cancel = true;
+            }
+            else if (result == "Cancel")
+            {
+                e.Cancel = true;
+            }
+        }
+
         base.OnClosing(e);
     }
 }
