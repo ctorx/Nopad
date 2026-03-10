@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace Nopad;
 
@@ -11,6 +12,7 @@ public partial class FindReplaceControl : UserControl
 {
     private TextBox? _editor;
     private int _lastFoundIndex = -1;
+    private int _lastFoundLength;
 
     public FindReplaceControl()
     {
@@ -140,8 +142,7 @@ public partial class FindReplaceControl : UserControl
         Visibility = Visibility.Visible;
         ChevronToggle.IsChecked = false;
         ReplaceRow.Height = new GridLength(0);
-        FindTextBox.Focus();
-        FindTextBox.SelectAll();
+        FocusFindTextBox();
     }
 
     public void ShowReplace()
@@ -149,8 +150,16 @@ public partial class FindReplaceControl : UserControl
         Visibility = Visibility.Visible;
         ChevronToggle.IsChecked = true;
         ReplaceRow.Height = GridLength.Auto;
-        FindTextBox.Focus();
-        FindTextBox.SelectAll();
+        FocusFindTextBox();
+    }
+
+    private void FocusFindTextBox()
+    {
+        Dispatcher.BeginInvoke(DispatcherPriority.Input, () =>
+        {
+            FindTextBox.Focus();
+            FindTextBox.SelectAll();
+        });
     }
 
     public void Hide()
@@ -193,6 +202,8 @@ public partial class FindReplaceControl : UserControl
     {
         ClearFindButton.Visibility = string.IsNullOrEmpty(FindTextBox.Text)
             ? Visibility.Collapsed : Visibility.Visible;
+        _lastFoundIndex = -1;
+        _lastFoundLength = 0;
     }
 
     private void ReplaceTextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -232,6 +243,17 @@ public partial class FindReplaceControl : UserControl
         return leftBoundary && rightBoundary;
     }
 
+    private void SelectInEditor(int index, int length)
+    {
+        if (_editor == null) return;
+        _editor.Focus();
+        _editor.Select(index, length);
+        int line = _editor.GetLineIndexFromCharacterIndex(index);
+        _editor.ScrollToLine(line);
+        _lastFoundIndex = index;
+        _lastFoundLength = length;
+    }
+
     public void FindNext()
     {
         if (_editor == null || string.IsNullOrEmpty(FindTextBox.Text))
@@ -241,7 +263,11 @@ public partial class FindReplaceControl : UserControl
         string editorText = _editor.Text;
         var comparison = GetComparison();
 
-        int startIndex = _editor.SelectionStart + _editor.SelectionLength;
+        int startIndex = _lastFoundIndex >= 0
+            ? _lastFoundIndex + _lastFoundLength
+            : 0;
+        if (startIndex > editorText.Length) startIndex = 0;
+
         int index = editorText.IndexOf(searchText, startIndex, comparison);
 
         // Wrap around
@@ -254,18 +280,9 @@ public partial class FindReplaceControl : UserControl
         }
 
         if (index >= 0)
-        {
-            _editor.Select(index, searchText.Length);
-            _editor.Focus();
-            _lastFoundIndex = index;
-
-            int line = _editor.GetLineIndexFromCharacterIndex(index);
-            _editor.ScrollToLine(line);
-        }
+            SelectInEditor(index, searchText.Length);
         else
-        {
             ThemedMessageBox.Show($"Cannot find \"{searchText}\"", "Nopad", Window.GetWindow(this));
-        }
     }
 
     public void FindPrevious()
@@ -277,9 +294,9 @@ public partial class FindReplaceControl : UserControl
         string editorText = _editor.Text;
         var comparison = GetComparison();
 
-        int startIndex = _editor.SelectionStart - 1;
-        if (startIndex < 0)
-            startIndex = editorText.Length - 1;
+        int startIndex = _lastFoundIndex > 0
+            ? _lastFoundIndex - 1
+            : editorText.Length - 1;
 
         int index = editorText.LastIndexOf(searchText, startIndex, comparison);
 
@@ -294,18 +311,9 @@ public partial class FindReplaceControl : UserControl
         }
 
         if (index >= 0)
-        {
-            _editor.Select(index, searchText.Length);
-            _editor.Focus();
-            _lastFoundIndex = index;
-
-            int line = _editor.GetLineIndexFromCharacterIndex(index);
-            _editor.ScrollToLine(line);
-        }
+            SelectInEditor(index, searchText.Length);
         else
-        {
             ThemedMessageBox.Show($"Cannot find \"{searchText}\"", "Nopad", Window.GetWindow(this));
-        }
     }
 
     public void ReplaceCurrent()

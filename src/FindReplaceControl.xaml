@@ -115,7 +115,8 @@
                           Content="&#xE70D;"
                           ToolTip="Toggle Replace"
                           Checked="ChevronToggle_Changed" Unchecked="ChevronToggle_Changed"
-                          VerticalAlignment="Center" Margin="0,0,4,0"/>
+                          VerticalAlignment="Center" Margin="0,0,4,0"
+                          IsTabStop="False"/>
 
             <!-- Find field with embedded clear + search icons -->
             <Grid Grid.Row="0" Grid.Column="1" Margin="0,2">
@@ -123,6 +124,7 @@
                          VerticalContentAlignment="Center"
                          Padding="6,4,52,4"
                          Style="{x:Null}"
+                         TabIndex="0"
                          KeyDown="FindTextBox_KeyDown"/>
                 <StackPanel Orientation="Horizontal"
                             HorizontalAlignment="Right" VerticalAlignment="Center"
@@ -142,17 +144,18 @@
                         VerticalAlignment="Center" Margin="4,0,0,0">
                 <Button Style="{StaticResource IconBtn}"
                         Content="&#xE70D;" Click="NextButton_Click"
-                        ToolTip="Find Next"/>
+                        ToolTip="Find Next" TabIndex="4" IsTabStop="False"/>
                 <Button Style="{StaticResource IconBtn}"
                         Content="&#xE70E;" Click="PreviousButton_Click"
-                        ToolTip="Find Previous"/>
+                        ToolTip="Find Previous" TabIndex="5" IsTabStop="False"/>
                 <ToggleButton x:Name="OptionsToggle" Style="{StaticResource IconToggle}"
                               Content="&#xE713;"
                               ToolTip="Search Options"
-                              Checked="OptionsToggle_Changed" Unchecked="OptionsToggle_Changed"/>
+                              Checked="OptionsToggle_Changed" Unchecked="OptionsToggle_Changed"
+                              TabIndex="6" IsTabStop="False"/>
                 <Button Style="{StaticResource IconBtn}"
                         Content="&#xE711;" Click="CloseButton_Click"
-                        ToolTip="Close"/>
+                        ToolTip="Close" TabIndex="7" IsTabStop="False"/>
             </StackPanel>
 
             <!-- Options flyout -->
@@ -178,6 +181,7 @@
                          VerticalContentAlignment="Center"
                          Padding="6,4,28,4"
                          Style="{x:Null}"
+                         TabIndex="1"
                          KeyDown="ReplaceTextBox_KeyDown"/>
                 <Button x:Name="ClearReplaceButton" Style="{StaticResource EmbeddedBtn}"
                         Content="&#xE711;"
@@ -190,9 +194,9 @@
             <StackPanel Grid.Row="1" Grid.Column="2" Orientation="Horizontal"
                         VerticalAlignment="Center" Margin="4,0,0,0">
                 <Button x:Name="ReplaceButton" Content="Replace" Click="ReplaceButton_Click"
-                        Height="30" Padding="12,0" Margin="0,0,2,0"/>
+                        Height="30" Padding="12,0" Margin="0,0,2,0" TabIndex="2"/>
                 <Button x:Name="ReplaceAllButton" Content="Replace all" Click="ReplaceAllButton_Click"
-                        Height="30" Padding="12,0"/>
+                        Height="30" Padding="12,0" TabIndex="3"/>
             </StackPanel>
         </Grid>
     </Border>
