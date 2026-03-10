@@ -350,14 +350,7 @@ public partial class FindReplaceControl : UserControl
         }
 
         if (count > 0)
-        {
             _editor.Text = editorText;
-            MessageBox.Show($"Replaced {count} occurrence(s).", "Nopad", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-        else
-        {
-            MessageBox.Show($"Cannot find \"{searchText}\"", "Nopad", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
     }
 
     // --- Key handlers ---
