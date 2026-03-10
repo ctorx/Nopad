@@ -347,12 +347,19 @@ public partial class FindReplaceControl : UserControl
         if (_editor == null || string.IsNullOrEmpty(FindTextBox.Text))
             return;
 
-        if (_editor.SelectionLength > 0 &&
-            string.Equals(_editor.SelectedText, FindTextBox.Text, GetComparison()))
+        // If current selection isn't already a match, find the next one first
+        if (_editor.SelectionLength == 0 ||
+            !string.Equals(_editor.SelectedText, FindTextBox.Text, GetComparison()))
         {
-            _editor.SelectedText = ReplaceTextBox.Text;
+            FindNext();
+            return;
         }
 
+        // Replace the current match
+        _editor.Focus();
+        _editor.SelectedText = ReplaceTextBox.Text;
+
+        // Find and highlight the next occurrence
         FindNext();
     }
 
