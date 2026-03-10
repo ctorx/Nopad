@@ -14,39 +14,30 @@ public partial class FindReplaceControl : UserControl
     private int _lastFoundIndex = -1;
     private int _lastFoundLength;
 
+    /// <summary>Tracks which field was last active so Enter in editor knows what to do.</summary>
+    private bool _replaceFieldActive;
+
     public FindReplaceControl()
     {
         InitializeComponent();
         FindTextBox.TextChanged += FindTextBox_TextChanged;
         ReplaceTextBox.TextChanged += ReplaceTextBox_TextChanged;
+        FindTextBox.GotFocus += (_, _) => _replaceFieldActive = false;
+        ReplaceTextBox.GotFocus += (_, _) => _replaceFieldActive = true;
         Loaded += OnLoaded;
     }
 
     public void Attach(TextBox editor)
     {
         _editor = editor;
-
-        // Subscribe to scroll after visual tree is ready so inactive highlight repaints
-        editor.Loaded += (_, _) =>
-        {
-            var sv = FindScrollViewer(editor);
-            if (sv != null)
-                sv.ScrollChanged += (_, _) =>
-                {
-                    if (_lastFoundIndex >= 0 && _lastFoundLength > 0 && !_editor.IsFocused)
-                    {
-                        _editor.Select(_lastFoundIndex, _lastFoundLength);
-                    }
-                };
-        };
     }
 
-    private static System.Windows.Controls.ScrollViewer? FindScrollViewer(DependencyObject obj)
+    private static ScrollViewer? FindScrollViewer(DependencyObject obj)
     {
         for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
         {
             var child = VisualTreeHelper.GetChild(obj, i);
-            if (child is System.Windows.Controls.ScrollViewer sv) return sv;
+            if (child is ScrollViewer sv) return sv;
             var result = FindScrollViewer(child);
             if (result != null) return result;
         }
@@ -62,7 +53,6 @@ public partial class FindReplaceControl : UserControl
     {
         if (_editor == null) return;
 
-        // Detect dark mode from the editor's resolved foreground — if the text is light, the theme is dark
         var editorFg = _editor.Foreground as SolidColorBrush;
         bool isDark = editorFg != null && editorFg.Color.R > 128;
 
@@ -76,7 +66,6 @@ public partial class FindReplaceControl : UserControl
 
         if (isDark)
         {
-            // --- Dark mode: explicit Win11 dark hex values ---
             var cardBg    = B("#2D2D2D");
             var cardBdr   = B("#404040");
             var fg        = B("#FFFFFF");
@@ -105,23 +94,19 @@ public partial class FindReplaceControl : UserControl
                 btn.BorderBrush = btnBdr;
             }
 
-            // All icon buttons / toggles
             ChevronToggle.Foreground = fg;
             foreach (UIElement child in IconButtonPanel.Children)
                 if (child is ButtonBase b) b.Foreground = fg;
 
-            // Embedded icons inside text fields
             ClearFindButton.Foreground = fg;
             ClearReplaceButton.Foreground = fg;
             SearchEmbeddedButton.Foreground = fg;
 
-            // Checkboxes
             MatchCaseCheckBox.Foreground = fg;
             WholeWordCheckBox.Foreground = fg;
         }
         else
         {
-            // --- Light mode ---
             var cardBg    = B("#F3F3F3");
             var cardBdr   = B("#E0E0E0");
             var fg        = B("#1A1A1A");
@@ -168,6 +153,7 @@ public partial class FindReplaceControl : UserControl
         Visibility = Visibility.Visible;
         ChevronToggle.IsChecked = false;
         ReplaceRow.Height = new GridLength(0);
+        _replaceFieldActive = false;
         FocusFindTextBox();
     }
 
@@ -176,6 +162,7 @@ public partial class FindReplaceControl : UserControl
         Visibility = Visibility.Visible;
         ChevronToggle.IsChecked = true;
         ReplaceRow.Height = GridLength.Auto;
+        _replaceFieldActive = false;
         FocusFindTextBox();
     }
 
@@ -195,6 +182,28 @@ public partial class FindReplaceControl : UserControl
         _editor?.Focus();
     }
 
+    /// <summary>
+    /// Called from MainWindow's Editor PreviewKeyDown when the find bar is visible.
+    /// Returns true if the key was handled (Enter/Escape).
+    /// </summary>
+    public bool HandleEditorKeyDown(KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter)
+        {
+            if (_replaceFieldActive)
+                ReplaceCurrent();
+            else
+                FindNext();
+            return true;
+        }
+        if (e.Key == Key.Escape)
+        {
+            Hide();
+            return true;
+        }
+        return false;
+    }
+
     // --- Chevron toggle ---
 
     private void ChevronToggle_Changed(object sender, RoutedEventArgs e)
@@ -202,12 +211,12 @@ public partial class FindReplaceControl : UserControl
         if (ChevronToggle.IsChecked == true)
         {
             ReplaceRow.Height = GridLength.Auto;
-            ChevronToggle.Content = "\uE70E"; // Up chevron
+            ChevronToggle.Content = "\uE70E";
         }
         else
         {
             ReplaceRow.Height = new GridLength(0);
-            ChevronToggle.Content = "\uE70D"; // Down chevron
+            ChevronToggle.Content = "\uE70D";
         }
     }
 
@@ -273,6 +282,7 @@ public partial class FindReplaceControl : UserControl
     private void SelectInEditor(int index, int length)
     {
         if (_editor == null) return;
+
         _editor.Focus();
         _editor.Select(index, length);
         int line = _editor.GetLineIndexFromCharacterIndex(index);
@@ -280,7 +290,7 @@ public partial class FindReplaceControl : UserControl
         _lastFoundIndex = index;
         _lastFoundLength = length;
 
-        // If the match is in the first 50px of the editor (unscrolled position),
+        // If the match is in the first N px of the editor (unscrolled position),
         // add temporary top padding to push content below the find/replace card
         if (Visibility == Visibility.Visible)
         {
@@ -290,15 +300,15 @@ public partial class FindReplaceControl : UserControl
                 var sv = FindScrollViewer(_editor);
                 if (sv == null) return;
 
-                // Calculate the match position without scroll offset (its natural position)
                 double naturalY = rect.Top + sv.VerticalOffset;
+                double threshold = ChevronToggle.IsChecked == true ? 75 : 50;
 
-                if (naturalY < 50)
+                if (naturalY < threshold)
                 {
-                    if (_editor.Padding.Top < 50)
+                    if (_editor.Padding.Top < threshold)
                     {
                         var p = _editor.Padding;
-                        _editor.Padding = new Thickness(p.Left, 50, p.Right, p.Bottom);
+                        _editor.Padding = new Thickness(p.Left, threshold, p.Right, p.Bottom);
                         _editor.ScrollToLine(line);
                     }
                 }
@@ -398,7 +408,6 @@ public partial class FindReplaceControl : UserControl
         }
 
         // Replace the current match
-        _editor.Focus();
         _editor.SelectedText = ReplaceTextBox.Text;
 
         // Find and highlight the next occurrence
@@ -438,13 +447,20 @@ public partial class FindReplaceControl : UserControl
 
     // --- Key handlers ---
 
-    private void FindTextBox_KeyDown(object sender, KeyEventArgs e)
+    private void HandleCommonKeys(KeyEventArgs e)
     {
-        if (e.Key == Key.Enter)
+        if (Keyboard.Modifiers == ModifierKeys.Control)
         {
-            FindNext();
-            FindTextBox.Focus();
-            e.Handled = true;
+            if (e.Key == Key.H)
+            {
+                ShowReplace();
+                e.Handled = true;
+            }
+            else if (e.Key == Key.F)
+            {
+                ShowFind();
+                e.Handled = true;
+            }
         }
         else if (e.Key == Key.Escape)
         {
@@ -453,18 +469,29 @@ public partial class FindReplaceControl : UserControl
         }
     }
 
+    private void FindTextBox_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter)
+        {
+            FindNext();
+            e.Handled = true;
+        }
+        else
+        {
+            HandleCommonKeys(e);
+        }
+    }
+
     private void ReplaceTextBox_KeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key == Key.Enter)
         {
             ReplaceCurrent();
-            ReplaceTextBox.Focus();
             e.Handled = true;
         }
-        else if (e.Key == Key.Escape)
+        else
         {
-            Hide();
-            e.Handled = true;
+            HandleCommonKeys(e);
         }
     }
 

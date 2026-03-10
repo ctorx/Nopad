@@ -124,7 +124,6 @@
                 <TextBox x:Name="Editor" Grid.Column="1"
                          AcceptsReturn="True"
                          AcceptsTab="True"
-                         IsInactiveSelectionHighlightEnabled="True"
                          TextWrapping="NoWrap"
                          VerticalScrollBarVisibility="Auto"
                          HorizontalScrollBarVisibility="Auto"

@@ -276,6 +276,13 @@ public partial class MainWindow : Window
 
     private void Editor_PreviewKeyDown(object sender, KeyEventArgs e)
     {
+        // When find/replace bar is visible, let it intercept Enter/Escape
+        if (FindReplaceBar.Visibility == Visibility.Visible && FindReplaceBar.HandleEditorKeyDown(e))
+        {
+            e.Handled = true;
+            return;
+        }
+
         bool ctrl = (Keyboard.Modifiers & ModifierKeys.Control) != 0;
         bool shift = (Keyboard.Modifiers & ModifierKeys.Shift) != 0;
         bool alt = (Keyboard.Modifiers & ModifierKeys.Alt) != 0;
