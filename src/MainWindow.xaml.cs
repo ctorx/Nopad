@@ -88,6 +88,8 @@ public partial class MainWindow : Window
         StatusBarMenuItem.IsChecked = _settings.StatusBar;
         AppStatusBar.Visibility = _settings.StatusBar ? Visibility.Visible : Visibility.Collapsed;
 
+        StateChanged += (_, _) => AdjustMaximizedPadding();
+
         Editor.Loaded += (_, _) =>
         {
             Editor.FocusVisualStyle = null; // Removes the dotted focus line
@@ -830,6 +832,16 @@ public partial class MainWindow : Window
         }
 
         FindReplaceBar.ApplyThemeColors();
+    }
+
+    // --- Maximized padding fix ---
+
+    private void AdjustMaximizedPadding()
+    {
+        if (WindowState == WindowState.Maximized)
+            RootPanel.Margin = new Thickness(6, 6, 6, 6);
+        else
+            RootPanel.Margin = new Thickness(0);
     }
 
     // --- Window Close: No Prompt ---
