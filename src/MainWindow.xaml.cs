@@ -117,6 +117,11 @@ public partial class MainWindow : Window
             ApplyThemeColors();
         };
 
+        // Open file from command-line argument (e.g. context menu "Edit in Nopad")
+        var args = Environment.GetCommandLineArgs();
+        if (args.Length > 1 && File.Exists(args[1]))
+            LoadFile(args[1]);
+
         Editor.Focus();
     }
 
@@ -178,30 +183,33 @@ public partial class MainWindow : Window
         };
 
         if (dialog.ShowDialog() == true)
+            LoadFile(dialog.FileName);
+    }
+
+    private void LoadFile(string path)
+    {
+        try
         {
-            try
-            {
-                byte[] bytes = File.ReadAllBytes(dialog.FileName);
-                _fileEncoding = DetectEncoding(bytes);
-                string content = _fileEncoding.GetString(bytes);
+            byte[] bytes = File.ReadAllBytes(path);
+            _fileEncoding = DetectEncoding(bytes);
+            string content = _fileEncoding.GetString(bytes);
 
-                // Strip BOM if present
-                if (content.Length > 0 && content[0] == '\uFEFF')
-                    content = content[1..];
+            // Strip BOM if present
+            if (content.Length > 0 && content[0] == '\uFEFF')
+                content = content[1..];
 
-                // Detect line ending
-                _lineEnding = content.Contains("\r\n") ? "\r\n" : "\n";
+            // Detect line ending
+            _lineEnding = content.Contains("\r\n") ? "\r\n" : "\n";
 
-                Editor.Text = content;
-                _currentFilePath = dialog.FileName;
-                _isModified = false;
-                UpdateTitle();
-                UpdateStatusBar();
-            }
-            catch (Exception ex)
-            {
-                ThemedMessageBox.Show($"Error opening file: {ex.Message}", "Nopad", this);
-            }
+            Editor.Text = content;
+            _currentFilePath = path;
+            _isModified = false;
+            UpdateTitle();
+            UpdateStatusBar();
+        }
+        catch (Exception ex)
+        {
+            ThemedMessageBox.Show($"Error opening file: {ex.Message}", "Nopad", this);
         }
     }
 
@@ -699,6 +707,16 @@ public partial class MainWindow : Window
     {
         bool installed = IsInstalled();
         IntegrateMenuItem.Header = installed ? "_Uninstall" : "_Install";
+
+        UpdateMenuItem.Visibility = Visibility.Collapsed;
+        if (installed && File.Exists(System32Exe))
+        {
+            var runningVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+            var installedVersion = System.Diagnostics.FileVersionInfo.GetVersionInfo(System32Exe);
+            var installedVer = new Version(installedVersion.FileMajorPart, installedVersion.FileMinorPart, installedVersion.FileBuildPart, installedVersion.FilePrivatePart);
+            if (runningVersion != null && runningVersion > installedVer)
+                UpdateMenuItem.Visibility = Visibility.Visible;
+        }
     }
 
     private void Integrate_Click(object sender, RoutedEventArgs e)
@@ -707,6 +725,38 @@ public partial class MainWindow : Window
             Uninstall();
         else
             Install();
+    }
+
+    private void Update_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            string currentExe = Process.GetCurrentProcess().MainModule!.FileName;
+            var psi = new ProcessStartInfo
+            {
+                FileName = "cmd.exe",
+                Arguments = $"/c copy /Y \"{currentExe}\" \"{System32Exe}\"",
+                Verb = "runas",
+                UseShellExecute = true,
+                WindowStyle = ProcessWindowStyle.Hidden
+            };
+
+            var proc = Process.Start(psi);
+            proc?.WaitForExit();
+
+            if (proc?.ExitCode == 0)
+                ThemedMessageBox.Show("Nopad has been updated.", "Nopad", this);
+            else
+                ThemedMessageBox.Show("Update failed. Make sure to approve the administrator prompt.", "Nopad", this);
+        }
+        catch (System.ComponentModel.Win32Exception)
+        {
+            // User cancelled UAC prompt
+        }
+        catch (Exception ex)
+        {
+            ThemedMessageBox.Show($"Update failed: {ex.Message}", "Nopad", this);
+        }
     }
 
     private void Install()

@@ -17,6 +17,7 @@
                     <MenuItem Header="Save _As..." InputGestureText="Ctrl+Shift+S" Click="SaveAs_Click"/>
                     <Separator/>
                     <MenuItem x:Name="IntegrateMenuItem" Header="_Install" Click="Integrate_Click"/>
+                    <MenuItem x:Name="UpdateMenuItem" Header="_Update" Click="Update_Click" Visibility="Collapsed"/>
                     <Separator/>
                     <MenuItem Header="E_xit" Click="Exit_Click"/>
                 </MenuItem>
