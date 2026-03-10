@@ -264,7 +264,7 @@ public partial class FindReplaceControl : UserControl
         }
         else
         {
-            MessageBox.Show($"Cannot find \"{searchText}\"", "Nopad", MessageBoxButton.OK, MessageBoxImage.Information);
+            ThemedMessageBox.Show($"Cannot find \"{searchText}\"", "Nopad", Window.GetWindow(this));
         }
     }
 
@@ -304,7 +304,7 @@ public partial class FindReplaceControl : UserControl
         }
         else
         {
-            MessageBox.Show($"Cannot find \"{searchText}\"", "Nopad", MessageBoxButton.OK, MessageBoxImage.Information);
+            ThemedMessageBox.Show($"Cannot find \"{searchText}\"", "Nopad", Window.GetWindow(this));
         }
     }
 

@@ -192,7 +192,7 @@ public partial class MainWindow : Window
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error opening file: {ex.Message}", "Nopad", MessageBoxButton.OK, MessageBoxImage.Error);
+                ThemedMessageBox.Show($"Error opening file: {ex.Message}", "Nopad", this);
             }
         }
     }
@@ -231,7 +231,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Error saving file: {ex.Message}", "Nopad", MessageBoxButton.OK, MessageBoxImage.Error);
+            ThemedMessageBox.Show($"Error saving file: {ex.Message}", "Nopad", this);
         }
     }
 
