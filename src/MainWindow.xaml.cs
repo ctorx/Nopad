@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -670,6 +671,136 @@ public partial class MainWindow : Window
         int caretPos = Editor.CaretIndex;
         Editor.Text = string.Join(_lineEnding, lines);
         Editor.CaretIndex = Math.Min(caretPos, Editor.Text.Length);
+    }
+
+    // --- Windows Integration ---
+
+    private static readonly string System32Exe = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "Nopad.exe");
+    private const string RegistryKeyPath = @"*\shell\Edit in Nopad";
+
+    private bool IsInstalled()
+    {
+        bool exeExists = File.Exists(System32Exe);
+        bool regExists = Microsoft.Win32.Registry.ClassesRoot.OpenSubKey(RegistryKeyPath) != null;
+        return exeExists && regExists;
+    }
+
+    private void FileMenu_SubmenuOpened(object sender, RoutedEventArgs e)
+    {
+        bool installed = IsInstalled();
+        IntegrateMenuItem.Header = installed ? "_Uninstall" : "_Install";
+    }
+
+    private void Integrate_Click(object sender, RoutedEventArgs e)
+    {
+        if (IsInstalled())
+            Uninstall();
+        else
+            Install();
+    }
+
+    private void Install()
+    {
+        try
+        {
+            string currentExe = Process.GetCurrentProcess().MainModule!.FileName;
+
+            var commands = new List<string>();
+
+            if (!File.Exists(System32Exe))
+                commands.Add($"copy /Y \"{currentExe}\" \"{System32Exe}\"");
+
+            if (Microsoft.Win32.Registry.ClassesRoot.OpenSubKey(RegistryKeyPath) == null)
+            {
+                commands.Add($"reg add \"HKEY_CLASSES_ROOT\\{RegistryKeyPath}\" /ve /d \"Edit in Nopad\" /f");
+                commands.Add($"reg add \"HKEY_CLASSES_ROOT\\{RegistryKeyPath}\\command\" /ve /d \"\\\"{System32Exe}\\\" \\\"%1\\\"\" /f");
+                commands.Add($"reg add \"HKEY_CLASSES_ROOT\\{RegistryKeyPath}\" /v \"Icon\" /d \"\\\"{System32Exe}\\\",0\" /f");
+            }
+
+            if (commands.Count == 0) return;
+
+            var psi = new ProcessStartInfo
+            {
+                FileName = "cmd.exe",
+                Arguments = "/c " + string.Join(" && ", commands),
+                Verb = "runas",
+                UseShellExecute = true,
+                WindowStyle = ProcessWindowStyle.Hidden
+            };
+
+            var proc = Process.Start(psi);
+            proc?.WaitForExit();
+
+            if (proc?.ExitCode == 0)
+                ThemedMessageBox.Show("Nopad has been installed.", "Nopad", this);
+            else
+                ThemedMessageBox.Show("Install failed. Make sure to approve the administrator prompt.", "Nopad", this);
+        }
+        catch (System.ComponentModel.Win32Exception)
+        {
+            // User cancelled UAC prompt
+        }
+        catch (Exception ex)
+        {
+            ThemedMessageBox.Show($"Install failed: {ex.Message}", "Nopad", this);
+        }
+    }
+
+    private void Uninstall()
+    {
+        try
+        {
+            string currentExe = Process.GetCurrentProcess().MainModule!.FileName;
+            bool runningFromSystem32 = currentExe.Equals(System32Exe, StringComparison.OrdinalIgnoreCase);
+
+            // Remove registry key and delete exe via elevated background script
+            // If running from System32, the exe is locked — use a script that waits for exit then deletes
+            var script = new StringBuilder();
+            script.Append("reg delete \"HKEY_CLASSES_ROOT\\");
+            script.Append(RegistryKeyPath);
+            script.Append("\" /f");
+
+            if (runningFromSystem32)
+            {
+                // Ping localhost to wait ~2 seconds for the process to exit, then delete
+                script.Append(" && ping 127.0.0.1 -n 3 > nul");
+            }
+
+            script.Append($" && del /f /q \"{System32Exe}\"");
+
+            var psi = new ProcessStartInfo
+            {
+                FileName = "cmd.exe",
+                Arguments = "/c " + script.ToString(),
+                Verb = "runas",
+                UseShellExecute = true,
+                WindowStyle = ProcessWindowStyle.Hidden
+            };
+
+            var proc = Process.Start(psi);
+
+            if (runningFromSystem32)
+            {
+                // Close immediately so the background script can delete the exe
+                Application.Current.Shutdown();
+            }
+            else
+            {
+                proc?.WaitForExit();
+                if (proc?.ExitCode == 0)
+                    ThemedMessageBox.Show("Nopad has been uninstalled.", "Nopad", this);
+                else
+                    ThemedMessageBox.Show("Uninstall failed. Make sure to approve the administrator prompt.", "Nopad", this);
+            }
+        }
+        catch (System.ComponentModel.Win32Exception)
+        {
+            // User cancelled UAC prompt
+        }
+        catch (Exception ex)
+        {
+            ThemedMessageBox.Show($"Uninstall failed: {ex.Message}", "Nopad", this);
+        }
     }
 
     // --- Menu Click Handlers ---

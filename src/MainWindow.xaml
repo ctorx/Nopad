@@ -9,11 +9,13 @@
     <DockPanel x:Name="RootPanel">
         <!-- Menu Bar -->
         <Menu x:Name="AppMenu" DockPanel.Dock="Top" Padding="0,0" Panel.ZIndex="10">
-            <MenuItem Header="_File" Margin="0,-8,0,-8">
+            <MenuItem Header="_File" Margin="0,-8,0,-8" SubmenuOpened="FileMenu_SubmenuOpened">
                 <MenuItem Header="_New" InputGestureText="Ctrl+N" Click="New_Click"/>
                 <MenuItem Header="_Open..." InputGestureText="Ctrl+O" Click="Open_Click"/>
                 <MenuItem Header="_Save" InputGestureText="Ctrl+S" Click="Save_Click"/>
                 <MenuItem Header="Save _As..." InputGestureText="Ctrl+Shift+S" Click="SaveAs_Click"/>
+                <Separator/>
+                <MenuItem x:Name="IntegrateMenuItem" Header="_Install" Click="Integrate_Click"/>
                 <Separator/>
                 <MenuItem Header="E_xit" Click="Exit_Click"/>
             </MenuItem>
