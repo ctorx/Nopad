@@ -8,7 +8,7 @@
         WindowStartupLocation="CenterScreen">
     <DockPanel>
         <!-- Menu Bar -->
-        <Menu DockPanel.Dock="Top">
+        <Menu x:Name="AppMenu" DockPanel.Dock="Top" Padding="0,1" Panel.ZIndex="10" VerticalAlignment="Center" Margin="2,0,0,0">
             <MenuItem Header="_File">
                 <MenuItem Header="_New" InputGestureText="Ctrl+N" Click="New_Click"/>
                 <MenuItem Header="_Open..." InputGestureText="Ctrl+O" Click="Open_Click"/>
@@ -46,27 +46,43 @@
         </Menu>
 
         <!-- Status Bar -->
-        <StatusBar x:Name="AppStatusBar" DockPanel.Dock="Bottom" Padding="4,1" FontSize="12">
-            <StatusBarItem Padding="4,0">
-                <TextBlock x:Name="StatusLineCol" Text="Ln 1, Col 1"/>
-            </StatusBarItem>
-            <Separator/>
-            <StatusBarItem Padding="4,0">
-                <TextBlock x:Name="StatusCharCount" Text="0 Characters"/>
-            </StatusBarItem>
-            <Separator/>
-            <StatusBarItem Padding="4,0">
-                <TextBlock x:Name="StatusZoom" Text="100%"/>
-            </StatusBarItem>
-            <Separator/>
-            <StatusBarItem Padding="4,0">
-                <TextBlock x:Name="StatusLineEnding" Text="Windows (CRLF)"/>
-            </StatusBarItem>
-            <Separator/>
-            <StatusBarItem Padding="4,0">
-                <TextBlock x:Name="StatusEncoding" Text="UTF-8"/>
-            </StatusBarItem>
-        </StatusBar>
+        <Border x:Name="AppStatusBar" DockPanel.Dock="Bottom" Padding="10,6" BorderThickness="0,1,0,0" Panel.ZIndex="10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <!-- Left: Ln/Col + separator + char count (expands) -->
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="74*"/>
+                    <ColumnDefinition Width="33*"/>
+                    <!-- Right: zoom + separator + line ending + separator + encoding -->
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock x:Name="StatusLineCol" Grid.Column="0" Text="Ln 1, Col 1"
+                           FontSize="12" VerticalAlignment="Center" Margin="4,0,4,0"/>
+                <TextBlock x:Name="StatusSep1" Grid.Column="1" Text="|"
+                           FontSize="12" VerticalAlignment="Center" Margin="6,0,6,0"/>
+                <TextBlock x:Name="StatusCharCount" Grid.Column="2" Text="0 Characters"
+                           FontSize="12" VerticalAlignment="Center" Margin="4,0,4,0"/>
+
+                <TextBlock x:Name="StatusZoom" Grid.Column="6" Text="100%"
+                           FontSize="12" VerticalAlignment="Center" Margin="4,0,4,0"/>
+                <TextBlock x:Name="StatusSep2" Grid.Column="7" Text="|"
+                           FontSize="12" VerticalAlignment="Center" Margin="6,0,6,0"/>
+                <TextBlock x:Name="StatusLineEnding" Grid.Column="8" Text="Windows (CRLF)"
+                           FontSize="12" VerticalAlignment="Center" Margin="4,0,4,0"/>
+                <TextBlock x:Name="StatusSep3" Grid.Column="9" Text="|"
+                           FontSize="12" VerticalAlignment="Center" Margin="6,0,6,0"/>
+                <TextBlock x:Name="StatusEncoding" Grid.Column="10" Text="UTF-8"
+                           FontSize="12" VerticalAlignment="Center" Margin="4,0,4,0"/>
+            </Grid>
+        </Border>
 
         <!-- Editor Area with floating Find/Replace overlay -->
         <Grid>
@@ -78,15 +94,18 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Line Number Gutter -->
-                <ScrollViewer x:Name="LineNumberScroller" Grid.Column="0"
-                              VerticalScrollBarVisibility="Hidden"
-                              HorizontalScrollBarVisibility="Hidden"
-                              IsHitTestVisible="False">
-                    <TextBlock x:Name="LineNumberText"
-                               FontFamily="Consolas" FontSize="14"
-                               TextAlignment="Right" Padding="8,0,8,0"
-                               VerticalAlignment="Top"/>
-                </ScrollViewer>
+                <Border x:Name="LineNumberBorder" Grid.Column="0" BorderThickness="0,0,1,0" Margin="0,-5,0,-5">
+                    <ScrollViewer x:Name="LineNumberScroller"
+                                  VerticalScrollBarVisibility="Hidden"
+                                  HorizontalScrollBarVisibility="Hidden"
+                                  IsHitTestVisible="False">
+                        <TextBlock x:Name="LineNumberText"
+                                   FontFamily="Consolas" FontSize="14"
+                                   LineHeight="22"
+                                   TextAlignment="Right" Padding="8,0,8,0"
+                                   VerticalAlignment="Top"/>
+                    </ScrollViewer>
+                </Border>
 
                 <!-- Text Editor -->
                 <TextBox x:Name="Editor" Grid.Column="1"
@@ -98,13 +117,14 @@
                          UndoLimit="500"
                          FontFamily="Consolas"
                          FontSize="14"
+                         TextBlock.LineHeight="22"
                          BorderThickness="0"
-                         Padding="20,0"
+                         BorderBrush="Transparent"    Background="Transparent"     Padding="20,0"
                          SelectionBrush="#0078D7"
                          TextChanged="Editor_TextChanged"
                          SelectionChanged="Editor_SelectionChanged"
                          PreviewKeyDown="Editor_PreviewKeyDown"
-                         PreviewMouseWheel="Editor_PreviewMouseWheel"/>
+                         PreviewMouseWheel="Editor_PreviewMouseWheel" Margin="0,-5,0,-5"/>
             </Grid>
 
             <!-- Floating Find/Replace panel (overlay) -->

@@ -90,6 +90,8 @@ public partial class MainWindow : Window
 
         Editor.Loaded += (_, _) =>
         {
+            Editor.FocusVisualStyle = null; // Removes the dotted focus line
+
             // Force vertical padding by setting margin on the internal ScrollContentPresenter
             var scrollContentPresenter = FindVisualChild<ScrollContentPresenter>(Editor);
             if (scrollContentPresenter != null)
@@ -753,23 +755,79 @@ public partial class MainWindow : Window
 
     private void ApplyThemeColors()
     {
-        // Detect dark mode from editor foreground (light text = dark theme)
         var editorFg = Editor.Foreground as SolidColorBrush;
         bool isDark = editorFg != null && editorFg.Color.R > 128;
 
-        // Gutter background
-        var gutterBrush = new SolidColorBrush(isDark
-            ? Color.FromRgb(0x25, 0x25, 0x25)
-            : Color.FromRgb(0xF0, 0xF0, 0xF0));
-        gutterBrush.Freeze();
-        LineNumberScroller.Background = gutterBrush;
+        static SolidColorBrush B(string hex)
+        {
+            var c = (Color)ColorConverter.ConvertFromString(hex);
+            var b = new SolidColorBrush(c);
+            b.Freeze();
+            return b;
+        }
 
-        // Line number text
-        var textBrush = new SolidColorBrush(isDark
-            ? Color.FromRgb(0x6E, 0x6E, 0x6E)
-            : Color.FromRgb(0x78, 0x78, 0x78));
-        textBrush.Freeze();
-        LineNumberText.Foreground = textBrush;
+        if (isDark)
+        {
+            var chromeBg = B("#2C2C2C");
+            var editorBg = B("#272727");
+            var fg       = B("#CFCFCF");
+            var sepColor = B("#3D3D3D");
+            var gutterBg = B("#252525");
+            var gutterFg = B("#6E6E6E");
+            var borderClr = B("#3D3D3D");
+
+            Editor.Background = editorBg;
+            Editor.BorderBrush = Brushes.Transparent; // Ensure no border color
+            Editor.CaretBrush = fg;                   // Make sure the cursor is visible!
+            Editor.Foreground = fg;
+
+            // Menu bar
+            AppMenu.Background = chromeBg;
+            AppMenu.Foreground = fg;
+
+            // Status bar
+            AppStatusBar.Background = chromeBg;
+            AppStatusBar.BorderBrush = borderClr;
+            foreach (var tb in new[] { StatusLineCol, StatusCharCount, StatusZoom, StatusLineEnding, StatusEncoding })
+                tb.Foreground = fg;
+            foreach (var sep in new[] { StatusSep1, StatusSep2, StatusSep3 })
+                sep.Foreground = sepColor;
+
+            // Gutter
+            LineNumberBorder.Background = gutterBg;
+            LineNumberBorder.BorderBrush = borderClr;
+            LineNumberText.Foreground = gutterFg;
+        }
+        else
+        {
+            var chromeBg = B("#F3F3F3");
+            var editorBg = B("#FFFFFF");
+            var fg       = B("#1A1A1A");
+            var sepColor = B("#D0D0D0");
+            var gutterBg = B("#F0F0F0");
+            var gutterFg = B("#787878");
+            var borderClr = B("#E0E0E0");
+
+            Editor.Background = editorBg;
+            Editor.BorderBrush = Brushes.Transparent;
+            Editor.CaretBrush = fg;
+            Editor.Foreground = fg;
+
+            AppMenu.Background = chromeBg;
+            AppMenu.Foreground = fg;
+
+
+            AppStatusBar.Background = chromeBg;
+            AppStatusBar.BorderBrush = borderClr;
+            foreach (var tb in new[] { StatusLineCol, StatusCharCount, StatusZoom, StatusLineEnding, StatusEncoding })
+                tb.Foreground = fg;
+            foreach (var sep in new[] { StatusSep1, StatusSep2, StatusSep3 })
+                sep.Foreground = sepColor;
+
+            LineNumberBorder.Background = gutterBg;
+            LineNumberBorder.BorderBrush = borderClr;
+            LineNumberText.Foreground = gutterFg;
+        }
 
         FindReplaceBar.ApplyThemeColors();
     }
