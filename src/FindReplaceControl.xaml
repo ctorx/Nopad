@@ -1,0 +1,197 @@
+<UserControl x:Class="Nopad.FindReplaceControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Visibility="Collapsed">
+    <UserControl.Resources>
+        <!-- Chromeless icon button -->
+        <Style x:Key="IconBtn" TargetType="Button">
+            <Setter Property="Width" Value="30"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontFamily" Value="Segoe Fluent Icons, Segoe MDL2 Assets"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="Transparent"
+                                CornerRadius="4" Width="{TemplateBinding Width}" Height="{TemplateBinding Height}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#20FFFFFF"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#30FFFFFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <!-- Chromeless icon toggle button — no default blue -->
+        <Style x:Key="IconToggle" TargetType="ToggleButton">
+            <Setter Property="Width" Value="30"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontFamily" Value="Segoe Fluent Icons, Segoe MDL2 Assets"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="Bd" Background="Transparent"
+                                CornerRadius="4" Width="{TemplateBinding Width}" Height="{TemplateBinding Height}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#20FFFFFF"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#20FFFFFF"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#30FFFFFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <!-- Embedded button inside textbox: chromeless, tiny -->
+        <Style x:Key="EmbeddedBtn" TargetType="Button">
+            <Setter Property="Width" Value="22"/>
+            <Setter Property="Height" Value="22"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="FontFamily" Value="Segoe Fluent Icons, Segoe MDL2 Assets"/>
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="Transparent"
+                                CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#20808080"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#30808080"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <!-- Card panel: background bound to the themed Window background -->
+    <Border x:Name="CardBorder" CornerRadius="8"
+            BorderThickness="1"
+            Padding="6"
+            SnapsToDevicePixels="True">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="12" ShadowDepth="4" Opacity="0.3" Direction="270"/>
+        </Border.Effect>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition x:Name="ReplaceRow" Height="0"/>
+            </Grid.RowDefinitions>
+
+            <!-- Chevron toggle -->
+            <ToggleButton x:Name="ChevronToggle" Grid.Row="0" Grid.Column="0"
+                          Style="{StaticResource IconToggle}"
+                          Content="&#xE70D;"
+                          ToolTip="Toggle Replace"
+                          Checked="ChevronToggle_Changed" Unchecked="ChevronToggle_Changed"
+                          VerticalAlignment="Center" Margin="0,0,4,0"/>
+
+            <!-- Find field with embedded clear + search icons -->
+            <Grid Grid.Row="0" Grid.Column="1" Margin="0,2">
+                <TextBox x:Name="FindTextBox" Width="280" Height="30"
+                         VerticalContentAlignment="Center"
+                         Padding="6,4,52,4"
+                         KeyDown="FindTextBox_KeyDown"/>
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Right" VerticalAlignment="Center"
+                            Margin="0,0,6,0" IsHitTestVisible="True">
+                    <Button x:Name="ClearFindButton" Style="{StaticResource EmbeddedBtn}"
+                            Content="&#xE711;"
+                            Click="ClearFindButton_Click" ToolTip="Clear"
+                            Visibility="Collapsed"/>
+                    <Button x:Name="SearchEmbeddedButton" Style="{StaticResource EmbeddedBtn}"
+                            Content="&#xE721;" FontSize="12"
+                            Click="NextButton_Click" ToolTip="Find"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Icon buttons: Next, Previous, Options, Close -->
+            <StackPanel x:Name="IconButtonPanel" Grid.Row="0" Grid.Column="2" Orientation="Horizontal"
+                        VerticalAlignment="Center" Margin="4,0,0,0">
+                <Button Style="{StaticResource IconBtn}"
+                        Content="&#xE70D;" Click="NextButton_Click"
+                        ToolTip="Find Next"/>
+                <Button Style="{StaticResource IconBtn}"
+                        Content="&#xE70E;" Click="PreviousButton_Click"
+                        ToolTip="Find Previous"/>
+                <ToggleButton x:Name="OptionsToggle" Style="{StaticResource IconToggle}"
+                              Content="&#xE713;"
+                              ToolTip="Search Options"
+                              Checked="OptionsToggle_Changed" Unchecked="OptionsToggle_Changed"/>
+                <Button Style="{StaticResource IconBtn}"
+                        Content="&#xE711;" Click="CloseButton_Click"
+                        ToolTip="Close"/>
+            </StackPanel>
+
+            <!-- Options flyout -->
+            <Popup x:Name="OptionsPopup" Placement="Bottom"
+                   PlacementTarget="{Binding ElementName=OptionsToggle}"
+                   StaysOpen="False" AllowsTransparency="True"
+                   Closed="OptionsPopup_Closed">
+                <Border x:Name="PopupBorder" CornerRadius="6" BorderThickness="1"
+                        Padding="8,6" Margin="0,2,0,0">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="8" ShadowDepth="2" Opacity="0.25" Direction="270"/>
+                    </Border.Effect>
+                    <StackPanel>
+                        <CheckBox x:Name="MatchCaseCheckBox" Content="Match case" Margin="0,2"/>
+                        <CheckBox x:Name="WholeWordCheckBox" Content="Whole word" Margin="0,2"/>
+                    </StackPanel>
+                </Border>
+            </Popup>
+
+            <!-- Replace field -->
+            <Grid Grid.Row="1" Grid.Column="1" Margin="0,2">
+                <TextBox x:Name="ReplaceTextBox" Width="280" Height="30"
+                         VerticalContentAlignment="Center"
+                         Padding="6,4,28,4"
+                         KeyDown="ReplaceTextBox_KeyDown"/>
+                <Button x:Name="ClearReplaceButton" Style="{StaticResource EmbeddedBtn}"
+                        Content="&#xE711;"
+                        Click="ClearReplaceButton_Click" ToolTip="Clear"
+                        Visibility="Collapsed"
+                        HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,6,0"/>
+            </Grid>
+
+            <!-- Replace action buttons -->
+            <StackPanel Grid.Row="1" Grid.Column="2" Orientation="Horizontal"
+                        VerticalAlignment="Center" Margin="4,0,0,0">
+                <Button x:Name="ReplaceButton" Content="Replace" Click="ReplaceButton_Click"
+                        Height="30" Padding="12,0" Margin="0,0,2,0"/>
+                <Button x:Name="ReplaceAllButton" Content="Replace all" Click="ReplaceAllButton_Click"
+                        Height="30" Padding="12,0"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>
