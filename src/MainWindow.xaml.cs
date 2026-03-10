@@ -150,7 +150,7 @@ public partial class MainWindow : Window
         int col = caretIndex - lineStart;
 
         StatusLineCol.Text = $"Ln {line + 1}, Col {col + 1}";
-        StatusCharCount.Text = $"{Editor.Text.Length} Characters";
+        StatusCharCount.Text = $"{Editor.Text.Length:N0} Characters";
         StatusZoom.Text = $"{(int)_zoomLevel}%";
         StatusLineEnding.Text = _lineEnding == "\r\n" ? "Windows (CRLF)" : "Unix (LF)";
         StatusEncoding.Text = _fileEncoding.EncodingName.Contains("UTF-8") ? "UTF-8" : _fileEncoding.EncodingName;

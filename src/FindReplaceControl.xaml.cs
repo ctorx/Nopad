@@ -25,6 +25,32 @@ public partial class FindReplaceControl : UserControl
     public void Attach(TextBox editor)
     {
         _editor = editor;
+
+        // Subscribe to scroll after visual tree is ready so inactive highlight repaints
+        editor.Loaded += (_, _) =>
+        {
+            var sv = FindScrollViewer(editor);
+            if (sv != null)
+                sv.ScrollChanged += (_, _) =>
+                {
+                    if (_lastFoundIndex >= 0 && _lastFoundLength > 0 && !_editor.IsFocused)
+                    {
+                        _editor.Select(_lastFoundIndex, _lastFoundLength);
+                    }
+                };
+        };
+    }
+
+    private static System.Windows.Controls.ScrollViewer? FindScrollViewer(DependencyObject obj)
+    {
+        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
+        {
+            var child = VisualTreeHelper.GetChild(obj, i);
+            if (child is System.Windows.Controls.ScrollViewer sv) return sv;
+            var result = FindScrollViewer(child);
+            if (result != null) return result;
+        }
+        return null;
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
@@ -368,6 +394,7 @@ public partial class FindReplaceControl : UserControl
         if (e.Key == Key.Enter)
         {
             FindNext();
+            FindTextBox.Focus();
             e.Handled = true;
         }
         else if (e.Key == Key.Escape)
@@ -382,6 +409,7 @@ public partial class FindReplaceControl : UserControl
         if (e.Key == Key.Enter)
         {
             ReplaceCurrent();
+            ReplaceTextBox.Focus();
             e.Handled = true;
         }
         else if (e.Key == Key.Escape)
