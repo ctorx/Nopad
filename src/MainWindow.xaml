@@ -49,6 +49,7 @@
             </Menu>
             <ToggleButton x:Name="LockButton" HorizontalAlignment="Right" Click="LockButton_Click"
                           Background="Transparent" BorderThickness="0" Cursor="Hand"
+                          Focusable="False"
                           VerticalAlignment="Center" Margin="0,0,8,0" Padding="2,0"
                           ToolTip="Click to enable save prompt on close">
                 <TextBlock x:Name="LockGlyph" Text="&#xE785;"
