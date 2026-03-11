@@ -10,10 +10,11 @@
 		<SelfContained>true</SelfContained>
 		<EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
 		<PublishReadyToRun>true</PublishReadyToRun>
+		<TieredPGO>true</TieredPGO>
 		<NoWarn>$(NoWarn);WPF0001</NoWarn>
-		<AssemblyVersion>1.0.0.1</AssemblyVersion>
-		<FileVersion>1.0.0.1</FileVersion>
-		<Version>1.0.0.1</Version>
+		<AssemblyVersion>1.0.0.2</AssemblyVersion>
+		<FileVersion>1.0.0.2</FileVersion>
+		<Version>1.0.0.2</Version>
 	</PropertyGroup>
 
 	<ItemGroup>
